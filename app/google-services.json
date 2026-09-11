@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "969733182637",
+    "project_id": "login-dc4d7",
+    "storage_bucket": "login-dc4d7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:969733182637:android:cc56d91eaeb7cc970c6224",
+        "android_client_info": {
+          "package_name": "br.com.loginfirebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUGskC3FqyTZSMX-LwDC22rALwgzTINDo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
