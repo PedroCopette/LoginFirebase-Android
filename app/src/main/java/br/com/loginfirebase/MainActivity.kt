@@ -14,7 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -28,10 +32,17 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LoginFirebaseTheme {
+
                 TelaLogin(
                     abrirCadastro = {
                         startActivity(
                             Intent(this, RegistrationActivity::class.java)
+                        )
+                    },
+
+                    entrar = {
+                        startActivity(
+                            Intent(this, DashboardActivity::class.java)
                         )
                     }
                 )
@@ -41,7 +52,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TelaLogin(abrirCadastro: () -> Unit) {
+fun TelaLogin(
+    abrirCadastro: () -> Unit,
+    entrar: () -> Unit
+) {
 
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
@@ -50,7 +64,9 @@ fun TelaLogin(abrirCadastro: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .padding(32.dp),
+
         horizontalAlignment = Alignment.CenterHorizontally,
+
         verticalArrangement = Arrangement.Center
     ) {
 
@@ -61,7 +77,9 @@ fun TelaLogin(abrirCadastro: () -> Unit) {
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("E-mail") },
+            label = {
+                Text("E-mail")
+            },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -70,7 +88,9 @@ fun TelaLogin(abrirCadastro: () -> Unit) {
         OutlinedTextField(
             value = senha,
             onValueChange = { senha = it },
-            label = { Text("Senha") },
+            label = {
+                Text("Senha")
+            },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
@@ -78,7 +98,9 @@ fun TelaLogin(abrirCadastro: () -> Unit) {
         Spacer(modifier = Modifier.height(25.dp))
 
         Button(
-            onClick = {},
+            onClick = {
+                entrar()
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("ENTRAR")
@@ -87,7 +109,9 @@ fun TelaLogin(abrirCadastro: () -> Unit) {
         Spacer(modifier = Modifier.height(15.dp))
 
         Button(
-            onClick = { abrirCadastro() },
+            onClick = {
+                abrirCadastro()
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("CADASTRAR")

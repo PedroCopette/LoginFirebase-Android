@@ -1,6 +1,5 @@
 package br.com.loginfirebase
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import br.com.loginfirebase.ui.theme.LoginFirebaseTheme
 
-class DashboardActivity : ComponentActivity() {
+class EventsActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,29 +28,24 @@ class DashboardActivity : ComponentActivity() {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(30.dp),
+                        .padding(25.dp),
 
                     horizontalAlignment = Alignment.CenterHorizontally,
 
                     verticalArrangement = Arrangement.Center
                 ) {
 
-                    Text("BEM-VINDO AO CAMPUSHUB!")
+                    Text("EVENTOS DISPONÍVEIS")
 
                     Spacer(modifier = Modifier.height(30.dp))
 
                     Button(
                         onClick = {
-                            startActivity(
-                                Intent(
-                                    this@DashboardActivity,
-                                    EventsActivity::class.java
-                                )
-                            )
+
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("EVENTOS")
+                        Text("Semana Acadêmica")
                     }
 
                     Spacer(modifier = Modifier.height(15.dp))
@@ -62,7 +56,7 @@ class DashboardActivity : ComponentActivity() {
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("MEUS EVENTOS")
+                        Text("Hackathon CampusHub")
                     }
 
                     Spacer(modifier = Modifier.height(15.dp))
@@ -73,10 +67,10 @@ class DashboardActivity : ComponentActivity() {
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("MEU PERFIL")
+                        Text("Palestra de Tecnologia")
                     }
 
-                    Spacer(modifier = Modifier.height(15.dp))
+                    Spacer(modifier = Modifier.height(25.dp))
 
                     Button(
                         onClick = {
@@ -84,7 +78,7 @@ class DashboardActivity : ComponentActivity() {
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("SAIR")
+                        Text("VOLTAR")
                     }
                 }
             }
