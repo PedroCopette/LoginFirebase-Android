@@ -2,6 +2,7 @@ package br.com.loginfirebase
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -23,30 +24,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import br.com.loginfirebase.ui.theme.LoginFirebaseTheme
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
 
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        auth = FirebaseAuth.getInstance()
 
         setContent {
             LoginFirebaseTheme {
 
                 TelaLogin(
+                    entrar = { email, senha ->
+                        fazerLogin(email, senha)
+                    },
+
                     abrirCadastro = {
                         startActivity(
                             Intent(
                                 this,
                                 RegistrationActivity::class.java
-                            )
-                        )
-                    },
-
-                    entrar = {
-                        startActivity(
-                            Intent(
-                                this,
-                                DashboardActivity::class.java
                             )
                         )
                     },
@@ -63,12 +64,64 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun fazerLogin(
+        email: String,
+        senha: String
+    ) {
+
+        val emailFinal = email.trim()
+        val senhaFinal = senha.trim()
+
+        if (emailFinal.isEmpty() || senhaFinal.isEmpty()) {
+
+            Toast.makeText(
+                this,
+                "Preencha e-mail e senha.",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            return
+        }
+
+        auth.signInWithEmailAndPassword(
+            emailFinal,
+            senhaFinal
+        ).addOnCompleteListener(this) { task ->
+
+            if (task.isSuccessful) {
+
+                Toast.makeText(
+                    this,
+                    "Login realizado com sucesso!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                startActivity(
+                    Intent(
+                        this,
+                        DashboardActivity::class.java
+                    )
+                )
+
+                finish()
+
+            } else {
+
+                Toast.makeText(
+                    this,
+                    "E-mail ou senha incorretos.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
 }
 
 @androidx.compose.runtime.Composable
 fun TelaLogin(
+    entrar: (String, String) -> Unit,
     abrirCadastro: () -> Unit,
-    entrar: () -> Unit,
     recuperarSenha: () -> Unit
 ) {
 
@@ -92,7 +145,9 @@ fun TelaLogin(
 
         Text("LOGIN")
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(
+            modifier = Modifier.height(30.dp)
+        )
 
         OutlinedTextField(
             value = email,
@@ -105,7 +160,9 @@ fun TelaLogin(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(15.dp))
+        Spacer(
+            modifier = Modifier.height(15.dp)
+        )
 
         OutlinedTextField(
             value = senha,
@@ -119,18 +176,22 @@ fun TelaLogin(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(25.dp))
+        Spacer(
+            modifier = Modifier.height(25.dp)
+        )
 
         Button(
             onClick = {
-                entrar()
+                entrar(email, senha)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("ENTRAR")
         }
 
-        Spacer(modifier = Modifier.height(15.dp))
+        Spacer(
+            modifier = Modifier.height(15.dp)
+        )
 
         Button(
             onClick = {
@@ -141,7 +202,9 @@ fun TelaLogin(
             Text("CADASTRAR")
         }
 
-        Spacer(modifier = Modifier.height(15.dp))
+        Spacer(
+            modifier = Modifier.height(15.dp)
+        )
 
         Button(
             onClick = {
