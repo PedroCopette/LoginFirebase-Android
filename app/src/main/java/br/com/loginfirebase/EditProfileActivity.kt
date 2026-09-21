@@ -1,5 +1,6 @@
 package br.com.loginfirebase
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -28,15 +29,30 @@ class EditProfileActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val preferencias = getSharedPreferences(
+            "CampusHubPrefs",
+            Context.MODE_PRIVATE
+        )
+
+        val nomeSalvo = preferencias.getString(
+            "nome",
+            "Pedro Copette"
+        ) ?: "Pedro Copette"
+
+        val emailSalvo = preferencias.getString(
+            "email",
+            "pedro@email.com"
+        ) ?: "pedro@email.com"
+
         setContent {
             LoginFirebaseTheme {
 
                 var nome by remember {
-                    mutableStateOf("Pedro Copette")
+                    mutableStateOf(nomeSalvo)
                 }
 
                 var email by remember {
-                    mutableStateOf("pedro@email.com")
+                    mutableStateOf(emailSalvo)
                 }
 
                 Column(
@@ -81,6 +97,12 @@ class EditProfileActivity : ComponentActivity() {
 
                     Button(
                         onClick = {
+
+                            preferencias.edit()
+                                .putString("nome", nome)
+                                .putString("email", email)
+                                .apply()
+
                             Toast.makeText(
                                 this@EditProfileActivity,
                                 "Perfil atualizado!",
