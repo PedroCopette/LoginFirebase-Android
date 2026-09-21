@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,13 +35,28 @@ class MainActivity : ComponentActivity() {
                 TelaLogin(
                     abrirCadastro = {
                         startActivity(
-                            Intent(this, RegistrationActivity::class.java)
+                            Intent(
+                                this,
+                                RegistrationActivity::class.java
+                            )
                         )
                     },
 
                     entrar = {
                         startActivity(
-                            Intent(this, DashboardActivity::class.java)
+                            Intent(
+                                this,
+                                DashboardActivity::class.java
+                            )
+                        )
+                    },
+
+                    recuperarSenha = {
+                        startActivity(
+                            Intent(
+                                this,
+                                RecoveryActivity::class.java
+                            )
                         )
                     }
                 )
@@ -51,14 +65,20 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
+@androidx.compose.runtime.Composable
 fun TelaLogin(
     abrirCadastro: () -> Unit,
-    entrar: () -> Unit
+    entrar: () -> Unit,
+    recuperarSenha: () -> Unit
 ) {
 
-    var email by remember { mutableStateOf("") }
-    var senha by remember { mutableStateOf("") }
+    var email by remember {
+        mutableStateOf("")
+    }
+
+    var senha by remember {
+        mutableStateOf("")
+    }
 
     Column(
         modifier = Modifier
@@ -76,7 +96,9 @@ fun TelaLogin(
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+            },
             label = {
                 Text("E-mail")
             },
@@ -87,7 +109,9 @@ fun TelaLogin(
 
         OutlinedTextField(
             value = senha,
-            onValueChange = { senha = it },
+            onValueChange = {
+                senha = it
+            },
             label = {
                 Text("Senha")
             },
@@ -119,6 +143,13 @@ fun TelaLogin(
 
         Spacer(modifier = Modifier.height(15.dp))
 
-        Text("Esqueceu sua senha?")
+        Button(
+            onClick = {
+                recuperarSenha()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("ESQUECI MINHA SENHA")
+        }
     }
 }
