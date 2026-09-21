@@ -17,11 +17,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import br.com.loginfirebase.ui.theme.LoginFirebaseTheme
+import com.google.firebase.auth.FirebaseAuth
 
 class DashboardActivity : ComponentActivity() {
 
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        auth = FirebaseAuth.getInstance()
 
         setContent {
             LoginFirebaseTheme {
@@ -90,6 +95,15 @@ class DashboardActivity : ComponentActivity() {
 
                     Button(
                         onClick = {
+                            auth.signOut()
+
+                            startActivity(
+                                Intent(
+                                    this@DashboardActivity,
+                                    MainActivity::class.java
+                                )
+                            )
+
                             finish()
                         },
                         modifier = Modifier.fillMaxWidth()

@@ -22,11 +22,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import br.com.loginfirebase.ui.theme.LoginFirebaseTheme
+import com.google.firebase.auth.FirebaseAuth
 
 class RecoveryActivity : ComponentActivity() {
 
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        auth = FirebaseAuth.getInstance()
 
         setContent {
             LoginFirebaseTheme {
@@ -47,7 +52,9 @@ class RecoveryActivity : ComponentActivity() {
 
                     Text("RECUPERAÇÃO DE SENHA")
 
-                    Spacer(modifier = Modifier.height(30.dp))
+                    Spacer(
+                        modifier = Modifier.height(30.dp)
+                    )
 
                     OutlinedTextField(
                         value = email,
@@ -60,24 +67,22 @@ class RecoveryActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Spacer(modifier = Modifier.height(25.dp))
+                    Spacer(
+                        modifier = Modifier.height(25.dp)
+                    )
 
                     Button(
                         onClick = {
-
-                            Toast.makeText(
-                                this@RecoveryActivity,
-                                "E-mail de recuperação enviado!",
-                                Toast.LENGTH_SHORT
-                            ).show()
-
+                            enviarRecuperacao(email)
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("ENVIAR")
                     }
 
-                    Spacer(modifier = Modifier.height(15.dp))
+                    Spacer(
+                        modifier = Modifier.height(15.dp)
+                    )
 
                     Button(
                         onClick = {
@@ -90,5 +95,43 @@ class RecoveryActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun enviarRecuperacao(email: String) {
+
+        val emailFinal = email.trim()
+
+        if (emailFinal.isEmpty()) {
+            Toast.makeText(
+                this,
+                "Digite seu e-mail.",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            return
+        }
+
+        auth.sendPasswordResetEmail(emailFinal)
+            .addOnCompleteListener(this) { task ->
+
+                if (task.isSuccessful) {
+
+                    Toast.makeText(
+                        this,
+                        "E-mail de recuperação enviado!",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    finish()
+
+                } else {
+
+                    Toast.makeText(
+                        this,
+                        "Não foi possível enviar o e-mail de recuperação.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
     }
 }
