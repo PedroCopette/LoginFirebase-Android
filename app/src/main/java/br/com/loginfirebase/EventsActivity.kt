@@ -43,6 +43,7 @@ class EventsActivity : ComponentActivity() {
                     Button(
                         onClick = {
                             abrirDetalhes(
+                                id = "semana_academica",
                                 nome = "Semana Acadêmica",
                                 data = "20/09/2026",
                                 horario = "19:00",
@@ -60,6 +61,7 @@ class EventsActivity : ComponentActivity() {
                     Button(
                         onClick = {
                             abrirDetalhes(
+                                id = "hackathon_campushub",
                                 nome = "Hackathon CampusHub",
                                 data = "25/09/2026",
                                 horario = "08:00",
@@ -77,6 +79,7 @@ class EventsActivity : ComponentActivity() {
                     Button(
                         onClick = {
                             abrirDetalhes(
+                                id = "palestra_tecnologia",
                                 nome = "Palestra de Tecnologia",
                                 data = "30/09/2026",
                                 horario = "20:00",
@@ -105,6 +108,7 @@ class EventsActivity : ComponentActivity() {
     }
 
     private fun abrirDetalhes(
+        id: String,
         nome: String,
         data: String,
         horario: String,
@@ -117,6 +121,7 @@ class EventsActivity : ComponentActivity() {
             EventDetailsActivity::class.java
         )
 
+        intent.putExtra("idEvento", id)
         intent.putExtra("nomeEvento", nome)
         intent.putExtra("dataEvento", data)
         intent.putExtra("horarioEvento", horario)
