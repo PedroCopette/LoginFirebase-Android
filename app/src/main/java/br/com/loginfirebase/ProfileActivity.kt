@@ -1,6 +1,5 @@
 package br.com.loginfirebase
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import br.com.loginfirebase.ui.theme.LoginFirebaseTheme
 
-class DashboardActivity : ComponentActivity() {
+class ProfileActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,54 +35,25 @@ class DashboardActivity : ComponentActivity() {
                     verticalArrangement = Arrangement.Center
                 ) {
 
-                    Text("BEM-VINDO AO CAMPUSHUB!")
+                    Text("MEU PERFIL")
 
                     Spacer(modifier = Modifier.height(30.dp))
 
-                    Button(
-                        onClick = {
-                            startActivity(
-                                Intent(
-                                    this@DashboardActivity,
-                                    EventsActivity::class.java
-                                )
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("EVENTOS")
-                    }
+                    Text("Nome: Pedro Copette")
 
                     Spacer(modifier = Modifier.height(15.dp))
 
-                    Button(
-                        onClick = {
-                            startActivity(
-                                Intent(
-                                    this@DashboardActivity,
-                                    MyEventsActivity::class.java
-                                )
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("MEUS EVENTOS")
-                    }
+                    Text("E-mail: pedro@email.com")
 
-                    Spacer(modifier = Modifier.height(15.dp))
+                    Spacer(modifier = Modifier.height(25.dp))
 
                     Button(
                         onClick = {
-                            startActivity(
-                                Intent(
-                                    this@DashboardActivity,
-                                    ProfileActivity::class.java
-                                )
-                            )
+
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("MEU PERFIL")
+                        Text("EDITAR PERFIL")
                     }
 
                     Spacer(modifier = Modifier.height(15.dp))
@@ -94,7 +64,7 @@ class DashboardActivity : ComponentActivity() {
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("SAIR")
+                        Text("VOLTAR")
                     }
                 }
             }
