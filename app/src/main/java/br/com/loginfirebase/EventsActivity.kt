@@ -1,5 +1,6 @@
 package br.com.loginfirebase
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -41,7 +42,13 @@ class EventsActivity : ComponentActivity() {
 
                     Button(
                         onClick = {
-
+                            abrirDetalhes(
+                                nome = "Semana Acadêmica",
+                                data = "20/09/2026",
+                                horario = "19:00",
+                                local = "Auditório da URI",
+                                descricao = "Evento acadêmico com palestras, apresentações e atividades para os estudantes."
+                            )
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -52,7 +59,13 @@ class EventsActivity : ComponentActivity() {
 
                     Button(
                         onClick = {
-
+                            abrirDetalhes(
+                                nome = "Hackathon CampusHub",
+                                data = "25/09/2026",
+                                horario = "08:00",
+                                local = "Laboratório de Informática",
+                                descricao = "Competição de programação e desenvolvimento de soluções tecnológicas."
+                            )
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -63,7 +76,13 @@ class EventsActivity : ComponentActivity() {
 
                     Button(
                         onClick = {
-
+                            abrirDetalhes(
+                                nome = "Palestra de Tecnologia",
+                                data = "30/09/2026",
+                                horario = "20:00",
+                                local = "Sala 12",
+                                descricao = "Palestra sobre tecnologia, inovação e tendências da área de computação."
+                            )
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -83,5 +102,27 @@ class EventsActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun abrirDetalhes(
+        nome: String,
+        data: String,
+        horario: String,
+        local: String,
+        descricao: String
+    ) {
+
+        val intent = Intent(
+            this,
+            EventDetailsActivity::class.java
+        )
+
+        intent.putExtra("nomeEvento", nome)
+        intent.putExtra("dataEvento", data)
+        intent.putExtra("horarioEvento", horario)
+        intent.putExtra("localEvento", local)
+        intent.putExtra("descricaoEvento", descricao)
+
+        startActivity(intent)
     }
 }
