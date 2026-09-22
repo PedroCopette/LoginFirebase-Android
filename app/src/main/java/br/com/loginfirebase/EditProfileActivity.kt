@@ -1,6 +1,5 @@
 package br.com.loginfirebase
 
-import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -23,36 +22,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import br.com.loginfirebase.ui.theme.LoginFirebaseTheme
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
 
 class EditProfileActivity : ComponentActivity() {
+
+    private val auth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val preferencias = getSharedPreferences(
-            "CampusHubPrefs",
-            Context.MODE_PRIVATE
-        )
+        val usuario = auth.currentUser
 
-        val nomeSalvo = preferencias.getString(
-            "nome",
-            "Pedro Copette"
-        ) ?: "Pedro Copette"
+        if (usuario == null) {
+            finish()
+            return
+        }
 
-        val emailSalvo = preferencias.getString(
-            "email",
-            "pedro@email.com"
-        ) ?: "pedro@email.com"
+        val nomeAtual = usuario.displayName ?: ""
+
+        val emailAtual = usuario.email ?: ""
 
         setContent {
             LoginFirebaseTheme {
 
                 var nome by remember {
-                    mutableStateOf(nomeSalvo)
-                }
-
-                var email by remember {
-                    mutableStateOf(emailSalvo)
+                    mutableStateOf(nomeAtual)
                 }
 
                 Column(
@@ -83,10 +78,9 @@ class EditProfileActivity : ComponentActivity() {
                     Spacer(modifier = Modifier.height(15.dp))
 
                     OutlinedTextField(
-                        value = email,
-                        onValueChange = {
-                            email = it
-                        },
+                        value = emailAtual,
+                        onValueChange = {},
+                        enabled = false,
                         label = {
                             Text("E-mail")
                         },
@@ -98,18 +92,45 @@ class EditProfileActivity : ComponentActivity() {
                     Button(
                         onClick = {
 
-                            preferencias.edit()
-                                .putString("nome", nome)
-                                .putString("email", email)
-                                .apply()
+                            val nomeFinal = nome.trim()
 
-                            Toast.makeText(
-                                this@EditProfileActivity,
-                                "Perfil atualizado!",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            if (nomeFinal.isEmpty()) {
+                                Toast.makeText(
+                                    this@EditProfileActivity,
+                                    "Digite um nome.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
 
-                            finish()
+                                return@Button
+                            }
+
+                            val atualizacao =
+                                UserProfileChangeRequest.Builder()
+                                    .setDisplayName(nomeFinal)
+                                    .build()
+
+                            usuario.updateProfile(atualizacao)
+                                .addOnCompleteListener { task ->
+
+                                    if (task.isSuccessful) {
+
+                                        Toast.makeText(
+                                            this@EditProfileActivity,
+                                            "Perfil atualizado!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+
+                                        finish()
+
+                                    } else {
+
+                                        Toast.makeText(
+                                            this@EditProfileActivity,
+                                            "Não foi possível atualizar o perfil.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {

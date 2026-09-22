@@ -1,6 +1,6 @@
 package br.com.loginfirebase
 
-import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,23 +13,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import br.com.loginfirebase.ui.theme.LoginFirebaseTheme
+import com.google.firebase.auth.FirebaseAuth
 
 class ProfileActivity : ComponentActivity() {
 
-    private var nomeUsuario by mutableStateOf("")
-    private var emailUsuario by mutableStateOf("")
+    private val auth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        carregarPerfil()
 
         setContent {
             LoginFirebaseTheme {
@@ -44,22 +39,30 @@ class ProfileActivity : ComponentActivity() {
                     verticalArrangement = Arrangement.Center
                 ) {
 
+                    val usuario = auth.currentUser
+
+                    val nome = usuario?.displayName
+                        ?: "Nome não informado"
+
+                    val email = usuario?.email
+                        ?: "E-mail não informado"
+
                     Text("MEU PERFIL")
 
                     Spacer(modifier = Modifier.height(30.dp))
 
-                    Text("Nome: $nomeUsuario")
+                    Text("Nome: $nome")
 
                     Spacer(modifier = Modifier.height(15.dp))
 
-                    Text("E-mail: $emailUsuario")
+                    Text("E-mail: $email")
 
                     Spacer(modifier = Modifier.height(25.dp))
 
                     Button(
                         onClick = {
                             startActivity(
-                                android.content.Intent(
+                                Intent(
                                     this@ProfileActivity,
                                     EditProfileActivity::class.java
                                 )
@@ -83,28 +86,5 @@ class ProfileActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        carregarPerfil()
-    }
-
-    private fun carregarPerfil() {
-
-        val preferencias = getSharedPreferences(
-            "CampusHubPrefs",
-            Context.MODE_PRIVATE
-        )
-
-        nomeUsuario = preferencias.getString(
-            "nome",
-            "Pedro Copette"
-        ) ?: "Pedro Copette"
-
-        emailUsuario = preferencias.getString(
-            "email",
-            "pedro@email.com"
-        ) ?: "pedro@email.com"
     }
 }
