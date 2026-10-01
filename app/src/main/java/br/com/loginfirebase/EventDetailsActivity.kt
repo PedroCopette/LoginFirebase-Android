@@ -29,6 +29,7 @@ class EventDetailsActivity : ComponentActivity() {
     private val db = FirebaseFirestore.getInstance()
 
     private var inscrito by mutableStateOf(false)
+    private var favorito by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,16 +37,18 @@ class EventDetailsActivity : ComponentActivity() {
         val idEvento = intent.getStringExtra("idEvento") ?: ""
         val nomeEvento = intent.getStringExtra("nomeEvento") ?: "Evento"
         val dataEvento = intent.getStringExtra("dataEvento") ?: "Data não informada"
-        val horarioEvento = intent.getStringExtra("horarioEvento") ?: "Horário não informado"
-        val localEvento = intent.getStringExtra("localEvento") ?: "Local não informado"
+        val horarioEvento = intent.getStringExtra("horarioEvento")
+            ?: "Horário não informado"
+        val localEvento = intent.getStringExtra("localEvento")
+            ?: "Local não informado"
         val descricaoEvento = intent.getStringExtra("descricaoEvento")
             ?: "Descrição não informada"
 
         verificarInscricao(idEvento)
+        verificarFavorito(idEvento)
 
         setContent {
             LoginFirebaseTheme {
-
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -96,11 +99,35 @@ class EventDetailsActivity : ComponentActivity() {
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-
                         if (inscrito) {
                             Text("CANCELAR INSCRIÇÃO")
                         } else {
                             Text("INSCREVER-SE")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(15.dp))
+
+                    Button(
+                        onClick = {
+                            if (favorito) {
+                                removerFavorito(idEvento)
+                            } else {
+                                adicionarFavorito(
+                                    idEvento,
+                                    nomeEvento,
+                                    dataEvento,
+                                    horarioEvento,
+                                    localEvento
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (favorito) {
+                            Text("★ REMOVER DOS FAVORITOS")
+                        } else {
+                            Text("☆ ADICIONAR AOS FAVORITOS")
                         }
                     }
 
@@ -129,8 +156,105 @@ class EventDetailsActivity : ComponentActivity() {
             .document(idInscricao)
             .get()
             .addOnSuccessListener { documento ->
-
                 inscrito = documento.exists()
+            }
+    }
+
+    private fun verificarFavorito(idEvento: String) {
+
+        val usuario = auth.currentUser ?: return
+
+        val idFavorito = "${usuario.uid}_$idEvento"
+
+        db.collection("favoritos")
+            .document(idFavorito)
+            .get()
+            .addOnSuccessListener { documento ->
+                favorito = documento.exists()
+            }
+    }
+
+    private fun adicionarFavorito(
+        idEvento: String,
+        nomeEvento: String,
+        dataEvento: String,
+        horarioEvento: String,
+        localEvento: String
+    ) {
+
+        val usuario = auth.currentUser
+
+        if (usuario == null) {
+            Toast.makeText(
+                this,
+                "Faça login para favoritar eventos.",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            return
+        }
+
+        val idFavorito = "${usuario.uid}_$idEvento"
+
+        val dados = hashMapOf(
+            "idEvento" to idEvento,
+            "nomeEvento" to nomeEvento,
+            "dataEvento" to dataEvento,
+            "horarioEvento" to horarioEvento,
+            "localEvento" to localEvento,
+            "usuarioId" to usuario.uid,
+            "usuarioEmail" to usuario.email
+        )
+
+        db.collection("favoritos")
+            .document(idFavorito)
+            .set(dados)
+            .addOnSuccessListener {
+
+                favorito = true
+
+                Toast.makeText(
+                    this,
+                    "Evento adicionado aos favoritos!",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            .addOnFailureListener {
+
+                Toast.makeText(
+                    this,
+                    "Erro ao adicionar aos favoritos.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+    }
+
+    private fun removerFavorito(idEvento: String) {
+
+        val usuario = auth.currentUser ?: return
+
+        val idFavorito = "${usuario.uid}_$idEvento"
+
+        db.collection("favoritos")
+            .document(idFavorito)
+            .delete()
+            .addOnSuccessListener {
+
+                favorito = false
+
+                Toast.makeText(
+                    this,
+                    "Evento removido dos favoritos!",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            .addOnFailureListener {
+
+                Toast.makeText(
+                    this,
+                    "Erro ao remover dos favoritos.",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }
 
