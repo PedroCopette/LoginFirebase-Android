@@ -30,7 +30,6 @@ class DashboardActivity : ComponentActivity() {
 
         setContent {
             LoginFirebaseTheme {
-
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -73,6 +72,22 @@ class DashboardActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("MEUS EVENTOS")
+                    }
+
+                    Spacer(modifier = Modifier.height(15.dp))
+
+                    Button(
+                        onClick = {
+                            startActivity(
+                                Intent(
+                                    this@DashboardActivity,
+                                    FavoritesActivity::class.java
+                                )
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("MEUS FAVORITOS")
                     }
 
                     Spacer(modifier = Modifier.height(15.dp))

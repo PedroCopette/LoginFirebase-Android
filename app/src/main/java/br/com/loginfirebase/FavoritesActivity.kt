@@ -25,19 +25,18 @@ import br.com.loginfirebase.ui.theme.LoginFirebaseTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
-class MyEventsActivity : ComponentActivity() {
+class FavoritesActivity : ComponentActivity() {
 
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
 
-    private var eventosInscritos by mutableStateOf<List<Evento>>(emptyList())
+    private var eventosFavoritos by mutableStateOf<List<FavoritoEvento>>(emptyList())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             LoginFirebaseTheme {
-
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -49,17 +48,17 @@ class MyEventsActivity : ComponentActivity() {
                     verticalArrangement = Arrangement.Center
                 ) {
 
-                    Text("MEUS EVENTOS")
+                    Text("MEUS FAVORITOS")
 
                     Spacer(modifier = Modifier.height(30.dp))
 
-                    if (eventosInscritos.isEmpty()) {
+                    if (eventosFavoritos.isEmpty()) {
 
-                        Text("Você ainda não está inscrito em nenhum evento.")
+                        Text("Você ainda não possui eventos favoritos.")
 
                     } else {
 
-                        eventosInscritos.forEach { evento ->
+                        eventosFavoritos.forEach { evento ->
 
                             Text(evento.nome)
 
@@ -75,11 +74,20 @@ class MyEventsActivity : ComponentActivity() {
 
                             Text("Local: ${evento.local}")
 
-                            Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Button(
+                                onClick = {
+                                    removerFavorito(evento.id)
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("REMOVER DOS FAVORITOS")
+                            }
+
+                            Spacer(modifier = Modifier.height(25.dp))
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
                         onClick = {
@@ -96,10 +104,10 @@ class MyEventsActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        carregarEventos()
+        carregarFavoritos()
     }
 
-    private fun carregarEventos() {
+    private fun carregarFavoritos() {
 
         val usuario = auth.currentUser
 
@@ -116,26 +124,29 @@ class MyEventsActivity : ComponentActivity() {
             return
         }
 
-        db.collection("inscricoes")
+        db.collection("favoritos")
             .whereEqualTo("usuarioId", usuario.uid)
             .get()
             .addOnSuccessListener { resultado ->
 
                 val lista = resultado.documents.mapNotNull { documento ->
 
+                    val id = documento.getString("idEvento")
                     val nome = documento.getString("nomeEvento")
                     val data = documento.getString("dataEvento")
                     val horario = documento.getString("horarioEvento")
                     val local = documento.getString("localEvento")
 
                     if (
+                        id != null &&
                         nome != null &&
                         data != null &&
                         horario != null &&
                         local != null
                     ) {
 
-                        Evento(
+                        FavoritoEvento(
+                            id = id,
                             nome = nome,
                             data = data,
                             horario = horario,
@@ -147,21 +158,50 @@ class MyEventsActivity : ComponentActivity() {
                     }
                 }
 
-                eventosInscritos = lista
+                eventosFavoritos = lista
             }
             .addOnFailureListener {
 
                 Toast.makeText(
                     this,
-                    "Erro ao carregar seus eventos.",
+                    "Erro ao carregar seus favoritos.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+    }
+
+    private fun removerFavorito(idEvento: String) {
+
+        val usuario = auth.currentUser ?: return
+
+        val idFavorito = "${usuario.uid}_$idEvento"
+
+        db.collection("favoritos")
+            .document(idFavorito)
+            .delete()
+            .addOnSuccessListener {
+
+                Toast.makeText(
+                    this,
+                    "Evento removido dos favoritos!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                carregarFavoritos()
+            }
+            .addOnFailureListener {
+
+                Toast.makeText(
+                    this,
+                    "Erro ao remover dos favoritos.",
                     Toast.LENGTH_SHORT
                 ).show()
             }
     }
 }
 
-data class Evento(
-    val id: String = "",
+data class FavoritoEvento(
+    val id: String,
     val nome: String,
     val data: String,
     val horario: String,
