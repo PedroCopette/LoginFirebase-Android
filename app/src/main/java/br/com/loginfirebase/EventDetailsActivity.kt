@@ -11,7 +11,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +34,10 @@ class EventDetailsActivity : ComponentActivity() {
     private var inscrito by mutableStateOf(false)
     private var favorito by mutableStateOf(false)
 
+    private var comentarios by mutableStateOf<List<Comentario>>(emptyList())
+    private var textoComentario by mutableStateOf("")
+    private var comentarioEditandoId by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -46,17 +53,19 @@ class EventDetailsActivity : ComponentActivity() {
 
         verificarInscricao(idEvento)
         verificarFavorito(idEvento)
+        carregarComentarios(idEvento)
 
         setContent {
             LoginFirebaseTheme {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(30.dp),
+                        .padding(30.dp)
+                        .verticalScroll(rememberScrollState()),
 
                     horizontalAlignment = Alignment.CenterHorizontally,
 
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.Top
                 ) {
 
                     Text("DETALHES DO EVENTO")
@@ -131,7 +140,114 @@ class EventDetailsActivity : ComponentActivity() {
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(30.dp))
+
+                    Text("COMENTÁRIOS")
+
                     Spacer(modifier = Modifier.height(15.dp))
+
+                    OutlinedTextField(
+                        value = textoComentario,
+                        onValueChange = {
+                            textoComentario = it
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = {
+                            Text(
+                                if (comentarioEditandoId == null)
+                                    "Digite seu comentário"
+                                else
+                                    "Editando comentário"
+                            )
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Button(
+                        onClick = {
+                            if (comentarioEditandoId == null) {
+                                publicarComentario(
+                                    idEvento,
+                                    nomeEvento
+                                )
+                            } else {
+                                editarComentario()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (comentarioEditandoId == null) {
+                            Text("PUBLICAR COMENTÁRIO")
+                        } else {
+                            Text("SALVAR EDIÇÃO")
+                        }
+                    }
+
+                    if (comentarioEditandoId != null) {
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Button(
+                            onClick = {
+                                textoComentario = ""
+                                comentarioEditandoId = null
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("CANCELAR EDIÇÃO")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(25.dp))
+
+                    if (comentarios.isEmpty()) {
+
+                        Text("Ainda não existem comentários.")
+
+                    } else {
+
+                        comentarios.forEach { comentario ->
+
+                            Text("Autor: ${comentario.autorNome}")
+
+                            Spacer(modifier = Modifier.height(5.dp))
+
+                            Text("Data: ${comentario.dataPublicacao}")
+
+                            Spacer(modifier = Modifier.height(5.dp))
+
+                            Text(comentario.texto)
+
+                            if (comentario.usuarioId == auth.currentUser?.uid) {
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                Button(
+                                    onClick = {
+                                        textoComentario = comentario.texto
+                                        comentarioEditandoId = comentario.id
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("EDITAR")
+                                }
+
+                                Spacer(modifier = Modifier.height(5.dp))
+
+                                Button(
+                                    onClick = {
+                                        excluirComentario(comentario.id)
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("EXCLUIR")
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(25.dp))
+                        }
+                    }
 
                     Button(
                         onClick = {
@@ -258,6 +374,186 @@ class EventDetailsActivity : ComponentActivity() {
             }
     }
 
+    private fun publicarComentario(
+        idEvento: String,
+        nomeEvento: String
+    ) {
+
+        val usuario = auth.currentUser
+
+        if (usuario == null) {
+            Toast.makeText(
+                this,
+                "Faça login para comentar.",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            return
+        }
+
+        val texto = textoComentario.trim()
+
+        if (texto.isEmpty()) {
+            Toast.makeText(
+                this,
+                "Digite um comentário.",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            return
+        }
+
+        val comentarioId = db.collection("comentarios").document().id
+
+        val autorNome = usuario.displayName
+            ?: usuario.email
+            ?: "Usuário"
+
+        val dataAtual = java.text.SimpleDateFormat(
+            "dd/MM/yyyy HH:mm",
+            java.util.Locale.getDefault()
+        ).format(java.util.Date())
+
+        val dados = hashMapOf(
+            "idEvento" to idEvento,
+            "nomeEvento" to nomeEvento,
+            "texto" to texto,
+            "usuarioId" to usuario.uid,
+            "autorNome" to autorNome,
+            "dataPublicacao" to dataAtual
+        )
+
+        db.collection("comentarios")
+            .document(comentarioId)
+            .set(dados)
+            .addOnSuccessListener {
+
+                textoComentario = ""
+
+                Toast.makeText(
+                    this,
+                    "Comentário publicado!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                carregarComentarios(idEvento)
+            }
+            .addOnFailureListener {
+
+                Toast.makeText(
+                    this,
+                    "Erro ao publicar comentário.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+    }
+
+    private fun carregarComentarios(idEvento: String) {
+
+        db.collection("comentarios")
+            .whereEqualTo("idEvento", idEvento)
+            .get()
+            .addOnSuccessListener { resultado ->
+
+                val lista = resultado.documents.mapNotNull { documento ->
+
+                    val id = documento.id
+                    val texto = documento.getString("texto")
+                    val usuarioId = documento.getString("usuarioId")
+                    val autorNome = documento.getString("autorNome")
+                    val dataPublicacao = documento.getString("dataPublicacao")
+
+                    if (
+                        texto != null &&
+                        usuarioId != null &&
+                        autorNome != null &&
+                        dataPublicacao != null
+                    ) {
+                        Comentario(
+                            id = id,
+                            texto = texto,
+                            usuarioId = usuarioId,
+                            autorNome = autorNome,
+                            dataPublicacao = dataPublicacao
+                        )
+                    } else {
+                        null
+                    }
+                }
+
+                comentarios = lista
+            }
+    }
+
+    private fun editarComentario() {
+
+        val idComentario = comentarioEditandoId ?: return
+
+        val texto = textoComentario.trim()
+
+        if (texto.isEmpty()) {
+            Toast.makeText(
+                this,
+                "Digite um comentário.",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            return
+        }
+
+        db.collection("comentarios")
+            .document(idComentario)
+            .update("texto", texto)
+            .addOnSuccessListener {
+
+                textoComentario = ""
+                comentarioEditandoId = null
+
+                Toast.makeText(
+                    this,
+                    "Comentário atualizado!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                val idEvento = intent.getStringExtra("idEvento") ?: ""
+                carregarComentarios(idEvento)
+            }
+            .addOnFailureListener {
+
+                Toast.makeText(
+                    this,
+                    "Erro ao editar comentário.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+    }
+
+    private fun excluirComentario(idComentario: String) {
+
+        db.collection("comentarios")
+            .document(idComentario)
+            .delete()
+            .addOnSuccessListener {
+
+                Toast.makeText(
+                    this,
+                    "Comentário excluído!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                val idEvento = intent.getStringExtra("idEvento") ?: ""
+                carregarComentarios(idEvento)
+            }
+            .addOnFailureListener {
+
+                Toast.makeText(
+                    this,
+                    "Erro ao excluir comentário.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+    }
+
     private fun fazerInscricao(
         idEvento: String,
         nomeEvento: String,
@@ -342,3 +638,11 @@ class EventDetailsActivity : ComponentActivity() {
             }
     }
 }
+
+data class Comentario(
+    val id: String,
+    val texto: String,
+    val usuarioId: String,
+    val autorNome: String,
+    val dataPublicacao: String
+)
