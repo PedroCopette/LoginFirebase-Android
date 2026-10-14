@@ -2,6 +2,7 @@ package br.com.loginfirebase
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -41,9 +42,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.com.loginfirebase.ui.theme.LoginFirebaseTheme
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -66,38 +70,18 @@ data class EventoBusca(
 
 class EventsActivity : ComponentActivity() {
 
+    private val auth = FirebaseAuth.getInstance()
+    private val db = FirebaseFirestore.getInstance()
+
+    private var eventosCarregados by mutableStateOf<List<EventoBusca>>(
+        emptyList()
+    )
+
+    private var carregandoEventos by mutableStateOf(true)
+    private var erroAoCarregar by mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val eventos = listOf(
-            EventoBusca(
-                id = "semana_academica",
-                nome = "Semana Acadêmica",
-                data = "20/09/2026",
-                horario = "19:00",
-                local = "Auditório da URI",
-                descricao = "Evento acadêmico com palestras, apresentações e atividades para os estudantes.",
-                categoria = "Acadêmico"
-            ),
-            EventoBusca(
-                id = "hackathon_campushub",
-                nome = "Hackathon CampusHub",
-                data = "25/09/2026",
-                horario = "08:00",
-                local = "Laboratório de Informática",
-                descricao = "Competição de programação e desenvolvimento de soluções tecnológicas.",
-                categoria = "Tecnologia"
-            ),
-            EventoBusca(
-                id = "palestra_tecnologia",
-                nome = "Palestra de Tecnologia",
-                data = "30/09/2026",
-                horario = "20:00",
-                local = "Sala 12",
-                descricao = "Palestra sobre tecnologia, inovação e tendências da área de computação.",
-                categoria = "Tecnologia"
-            )
-        )
 
         setContent {
             LoginFirebaseTheme {
@@ -122,7 +106,7 @@ class EventsActivity : ComponentActivity() {
                     mutableStateOf(false)
                 }
 
-                val eventosFiltrados = eventos.filter { evento ->
+                val eventosFiltrados = eventosCarregados.filter { evento ->
 
                     val correspondeBusca =
                         evento.nome.contains(
@@ -156,7 +140,6 @@ class EventsActivity : ComponentActivity() {
                             correspondeSituacao
                 }
 
-                // A tela inteira pode rolar para exibir todo o conteúdo.
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -166,7 +149,7 @@ class EventsActivity : ComponentActivity() {
                         .verticalScroll(rememberScrollState())
                 ) {
 
-                    // Cabeçalho
+                    // Cabeçalho do CampusHub
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -260,7 +243,6 @@ class EventsActivity : ComponentActivity() {
                         }
                     }
 
-                    // Área dos filtros e dos eventos
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -488,182 +470,217 @@ class EventsActivity : ComponentActivity() {
                             modifier = Modifier.height(12.dp)
                         )
 
-                        if (eventosFiltrados.isEmpty()) {
+                        when {
+                            carregandoEventos -> {
 
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color.White
-                                )
-                            ) {
-
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(25.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(20.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color.White
+                                    )
                                 ) {
-
                                     Text(
-                                        text = "🔎",
-                                        fontSize = 32.sp
-                                    )
-
-                                    Spacer(
-                                        modifier = Modifier.height(10.dp)
-                                    )
-
-                                    Text(
-                                        text = "Nenhum evento encontrado",
-                                        color = EventsText,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-
-                                    Spacer(
-                                        modifier = Modifier.height(5.dp)
-                                    )
-
-                                    Text(
-                                        text = "Tente mudar a busca ou os filtros.",
+                                        text = "Carregando eventos do Firebase...",
                                         color = EventsMuted,
-                                        fontSize = 13.sp
+                                        modifier = Modifier.padding(24.dp)
                                     )
                                 }
                             }
 
-                        } else {
-
-                            eventosFiltrados.forEach { evento ->
+                            erroAoCarregar -> {
 
                                 Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            abrirDetalhes(
-                                                id = evento.id,
-                                                nome = evento.nome,
-                                                data = evento.data,
-                                                horario = evento.horario,
-                                                local = evento.local,
-                                                descricao = evento.descricao
-                                            )
-                                        },
+                                    modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(20.dp),
                                     colors = CardDefaults.cardColors(
                                         containerColor = Color.White
-                                    ),
-                                    elevation = CardDefaults.cardElevation(
-                                        defaultElevation = 2.dp
+                                    )
+                                ) {
+                                    Text(
+                                        text = "Não foi possível carregar os eventos. Verifique a conexão e as regras do Firestore.",
+                                        color = EventsText,
+                                        modifier = Modifier.padding(24.dp)
+                                    )
+                                }
+                            }
+
+                            eventosFiltrados.isEmpty() -> {
+
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(20.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color.White
                                     )
                                 ) {
 
                                     Column(
-                                        modifier = Modifier.padding(17.dp)
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(25.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
 
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(48.dp)
-                                                    .clip(
-                                                        RoundedCornerShape(15.dp)
-                                                    )
-                                                    .background(
-                                                        Color(0xFFEAF0FF)
-                                                    ),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-
-                                                Text(
-                                                    text = if (
-                                                        evento.categoria == "Acadêmico"
-                                                    ) {
-                                                        "🎓"
-                                                    } else {
-                                                        "💻"
-                                                    },
-                                                    fontSize = 22.sp
-                                                )
-                                            }
-
-                                            Spacer(
-                                                modifier = Modifier.width(12.dp)
-                                            )
-
-                                            Column(
-                                                modifier = Modifier.weight(1f)
-                                            ) {
-
-                                                Text(
-                                                    text = evento.nome,
-                                                    color = EventsText,
-                                                    fontSize = 16.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-
-                                                Spacer(
-                                                    modifier = Modifier.height(5.dp)
-                                                )
-
-                                                Text(
-                                                    text = evento.categoria,
-                                                    color = EventsBlue,
-                                                    fontSize = 12.sp,
-                                                    fontWeight = FontWeight.Medium
-                                                )
-                                            }
-                                        }
+                                        Text(
+                                            text = "🔎",
+                                            fontSize = 32.sp
+                                        )
 
                                         Spacer(
-                                            modifier = Modifier.height(16.dp)
+                                            modifier = Modifier.height(10.dp)
                                         )
 
                                         Text(
-                                            text = "📅  ${evento.data}  •  ${evento.horario}",
+                                            text = "Nenhum evento encontrado",
                                             color = EventsText,
-                                            fontSize = 12.sp
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.SemiBold
                                         )
 
                                         Spacer(
-                                            modifier = Modifier.height(8.dp)
+                                            modifier = Modifier.height(5.dp)
                                         )
 
                                         Text(
-                                            text = "📍  ${evento.local}",
+                                            text = "Tente mudar a busca ou os filtros.",
                                             color = EventsMuted,
-                                            fontSize = 12.sp
-                                        )
-
-                                        Spacer(
-                                            modifier = Modifier.height(13.dp)
-                                        )
-
-                                        Text(
-                                            text = if (
-                                                eventoEncerrado(
-                                                    evento.data,
-                                                    evento.horario
-                                                )
-                                            ) {
-                                                "VER DETALHES  →  •  ENCERRADO"
-                                            } else {
-                                                "VER DETALHES  →"
-                                            },
-                                            color = EventsBlue,
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold
+                                            fontSize = 13.sp
                                         )
                                     }
                                 }
+                            }
 
-                                Spacer(
-                                    modifier = Modifier.height(13.dp)
-                                )
+                            else -> {
+
+                                eventosFiltrados.forEach { evento ->
+
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                abrirDetalhes(
+                                                    id = evento.id,
+                                                    nome = evento.nome,
+                                                    data = evento.data,
+                                                    horario = evento.horario,
+                                                    local = evento.local,
+                                                    descricao = evento.descricao
+                                                )
+                                            },
+                                        shape = RoundedCornerShape(20.dp),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = Color.White
+                                        ),
+                                        elevation = CardDefaults.cardElevation(
+                                            defaultElevation = 2.dp
+                                        )
+                                    ) {
+
+                                        Column(
+                                            modifier = Modifier.padding(17.dp)
+                                        ) {
+
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(48.dp)
+                                                        .clip(
+                                                            RoundedCornerShape(15.dp)
+                                                        )
+                                                        .background(Color(0xFFEAF0FF)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+
+                                                    Text(
+                                                        text = if (
+                                                            evento.categoria == "Acadêmico"
+                                                        ) {
+                                                            "🎓"
+                                                        } else {
+                                                            "💻"
+                                                        },
+                                                        fontSize = 22.sp
+                                                    )
+                                                }
+
+                                                Spacer(
+                                                    modifier = Modifier.width(12.dp)
+                                                )
+
+                                                Column(
+                                                    modifier = Modifier.weight(1f)
+                                                ) {
+
+                                                    Text(
+                                                        text = evento.nome,
+                                                        color = EventsText,
+                                                        fontSize = 16.sp,
+                                                        fontWeight = FontWeight.Bold
+                                                    )
+
+                                                    Spacer(
+                                                        modifier = Modifier.height(5.dp)
+                                                    )
+
+                                                    Text(
+                                                        text = evento.categoria,
+                                                        color = EventsBlue,
+                                                        fontSize = 12.sp,
+                                                        fontWeight = FontWeight.Medium
+                                                    )
+                                                }
+                                            }
+
+                                            Spacer(
+                                                modifier = Modifier.height(16.dp)
+                                            )
+
+                                            Text(
+                                                text = "📅  ${evento.data}  •  ${evento.horario}",
+                                                color = EventsText,
+                                                fontSize = 12.sp
+                                            )
+
+                                            Spacer(
+                                                modifier = Modifier.height(8.dp)
+                                            )
+
+                                            Text(
+                                                text = "📍  ${evento.local}",
+                                                color = EventsMuted,
+                                                fontSize = 12.sp
+                                            )
+
+                                            Spacer(
+                                                modifier = Modifier.height(13.dp)
+                                            )
+
+                                            Text(
+                                                text = if (
+                                                    eventoEncerrado(
+                                                        evento.data,
+                                                        evento.horario
+                                                    )
+                                                ) {
+                                                    "VER DETALHES  →  •  ENCERRADO"
+                                                } else {
+                                                    "VER DETALHES  →"
+                                                },
+                                                color = EventsBlue,
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(
+                                        modifier = Modifier.height(13.dp)
+                                    )
+                                }
                             }
                         }
 
@@ -701,12 +718,209 @@ class EventsActivity : ComponentActivity() {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 12.dp),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
             }
         }
+
+        // Cria somente os documentos que ainda não existem.
+        // Documentos existentes não são sobrescritos.
+        garantirEventosIniciais()
+    }
+
+    private fun obterEventosIniciais(): List<EventoBusca> {
+
+        return listOf(
+            EventoBusca(
+                id = "semana_academica",
+                nome = "Semana Acadêmica",
+                data = "20/09/2026",
+                horario = "19:00",
+                local = "Auditório da URI",
+                descricao = "Evento acadêmico com palestras, apresentações e atividades para os estudantes.",
+                categoria = "Acadêmico"
+            ),
+            EventoBusca(
+                id = "hackathon_campushub",
+                nome = "Hackathon CampusHub",
+                data = "25/09/2026",
+                horario = "08:00",
+                local = "Laboratório de Informática",
+                descricao = "Competição de programação e desenvolvimento de soluções tecnológicas.",
+                categoria = "Tecnologia"
+            ),
+            EventoBusca(
+                id = "palestra_tecnologia",
+                nome = "Palestra de Tecnologia",
+                data = "30/09/2026",
+                horario = "20:00",
+                local = "Sala 12",
+                descricao = "Palestra sobre tecnologia, inovação e tendências da área de computação.",
+                categoria = "Tecnologia"
+            )
+        )
+    }
+
+    private fun garantirEventosIniciais() {
+
+        if (auth.currentUser == null) {
+
+            carregandoEventos = false
+            erroAoCarregar = true
+
+            Toast.makeText(
+                this,
+                "Faça login para consultar os eventos.",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            return
+        }
+
+        carregandoEventos = true
+        erroAoCarregar = false
+
+        verificarOuCriarEvento(
+            eventos = obterEventosIniciais(),
+            indice = 0
+        )
+    }
+
+    private fun verificarOuCriarEvento(
+        eventos: List<EventoBusca>,
+        indice: Int
+    ) {
+
+        if (indice >= eventos.size) {
+            carregarEventosDoBanco()
+            return
+        }
+
+        val evento = eventos[indice]
+
+        val referencia = db.collection("eventos")
+            .document(evento.id)
+
+        referencia.get()
+            .addOnSuccessListener { documento ->
+
+                if (documento.exists()) {
+
+                    // Não altera o documento se ele já existe.
+                    verificarOuCriarEvento(
+                        eventos,
+                        indice + 1
+                    )
+
+                } else {
+
+                    val dados = hashMapOf(
+                        "nomeEvento" to evento.nome,
+                        "dataEvento" to evento.data,
+                        "horarioEvento" to evento.horario,
+                        "localEvento" to evento.local,
+                        "descricaoEvento" to evento.descricao,
+                        "categoria" to evento.categoria
+                    )
+
+                    referencia.set(dados)
+                        .addOnSuccessListener {
+
+                            verificarOuCriarEvento(
+                                eventos,
+                                indice + 1
+                            )
+                        }
+                        .addOnFailureListener {
+
+                            mostrarErroAoCarregar()
+                        }
+                }
+            }
+            .addOnFailureListener {
+
+                mostrarErroAoCarregar()
+            }
+    }
+
+    private fun carregarEventosDoBanco() {
+
+        db.collection("eventos")
+            .get()
+            .addOnSuccessListener { resultado ->
+
+                val lista = resultado.documents.mapNotNull { documento ->
+
+                    val nome = documento.getString("nomeEvento")
+                    val data = documento.getString("dataEvento")
+                    val horario = documento.getString("horarioEvento")
+                    val local = documento.getString("localEvento")
+                    val descricao = documento.getString("descricaoEvento")
+                    val categoria = documento.getString("categoria")
+
+                    if (
+                        nome != null &&
+                        data != null &&
+                        horario != null &&
+                        local != null &&
+                        descricao != null &&
+                        categoria != null
+                    ) {
+
+                        EventoBusca(
+                            id = documento.id,
+                            nome = nome,
+                            data = data,
+                            horario = horario,
+                            local = local,
+                            descricao = descricao,
+                            categoria = categoria
+                        )
+
+                    } else {
+                        null
+                    }
+                }.sortedBy { evento ->
+                    ordenarData(evento.data)
+                }
+
+                eventosCarregados = lista
+                carregandoEventos = false
+                erroAoCarregar = false
+            }
+            .addOnFailureListener {
+
+                mostrarErroAoCarregar()
+            }
+    }
+
+    private fun ordenarData(data: String): Long {
+
+        return try {
+
+            SimpleDateFormat(
+                "dd/MM/yyyy",
+                Locale.getDefault()
+            ).parse(data)?.time ?: Long.MAX_VALUE
+
+        } catch (e: Exception) {
+
+            Long.MAX_VALUE
+        }
+    }
+
+    private fun mostrarErroAoCarregar() {
+
+        carregandoEventos = false
+        erroAoCarregar = true
+
+        Toast.makeText(
+            this,
+            "Não foi possível carregar os eventos do Firebase.",
+            Toast.LENGTH_LONG
+        ).show()
     }
 
     private fun eventoEncerrado(
