@@ -65,7 +65,8 @@ data class EventoBusca(
     val horario: String,
     val local: String,
     val descricao: String,
-    val categoria: String
+    val categoria: String,
+    val endereco: String
 )
 
 class EventsActivity : ComponentActivity() {
@@ -565,7 +566,8 @@ class EventsActivity : ComponentActivity() {
                                                     data = evento.data,
                                                     horario = evento.horario,
                                                     local = evento.local,
-                                                    descricao = evento.descricao
+                                                    descricao = evento.descricao,
+                                                    endereco = evento.endereco
                                                 )
                                             },
                                         shape = RoundedCornerShape(20.dp),
@@ -730,6 +732,23 @@ class EventsActivity : ComponentActivity() {
         garantirEventosIniciais()
     }
 
+    // Define um endereço para cada evento diretamente no código.
+    private fun enderecoPadrao(id: String): String {
+        return when (id) {
+            "semana_academica" ->
+                "Av. Batista Bonotto Sobrinho, 733, Santiago - RS, Brasil"
+
+            "hackathon_campushub" ->
+                "Rua Tio Virgílio, 423, Santiago - RS, Brasil"
+
+            "palestra_tecnologia" ->
+                "Rua Bento Gonçalves, 1642, Santiago - RS, Brasil"
+
+            else ->
+                "Santiago, Rio Grande do Sul, Brasil"
+        }
+    }
+
     private fun obterEventosIniciais(): List<EventoBusca> {
 
         return listOf(
@@ -740,7 +759,8 @@ class EventsActivity : ComponentActivity() {
                 horario = "19:00",
                 local = "Auditório da URI",
                 descricao = "Evento acadêmico com palestras, apresentações e atividades para os estudantes.",
-                categoria = "Acadêmico"
+                categoria = "Acadêmico",
+                endereco = enderecoPadrao("semana_academica")
             ),
             EventoBusca(
                 id = "hackathon_campushub",
@@ -749,7 +769,8 @@ class EventsActivity : ComponentActivity() {
                 horario = "08:00",
                 local = "Laboratório de Informática",
                 descricao = "Competição de programação e desenvolvimento de soluções tecnológicas.",
-                categoria = "Tecnologia"
+                categoria = "Tecnologia",
+                endereco = enderecoPadrao("hackathon_campushub")
             ),
             EventoBusca(
                 id = "palestra_tecnologia",
@@ -758,7 +779,8 @@ class EventsActivity : ComponentActivity() {
                 horario = "20:00",
                 local = "Sala 12",
                 descricao = "Palestra sobre tecnologia, inovação e tendências da área de computação.",
-                categoria = "Tecnologia"
+                categoria = "Tecnologia",
+                endereco = enderecoPadrao("palestra_tecnologia")
             )
         )
     }
@@ -860,6 +882,11 @@ class EventsActivity : ComponentActivity() {
                     val descricao = documento.getString("descricaoEvento")
                     val categoria = documento.getString("categoria")
 
+                    // Se não existir enderecoEvento no Firebase,
+                    // utiliza o endereço definido no código.
+                    val endereco = documento.getString("enderecoEvento")
+                        ?: enderecoPadrao(documento.id)
+
                     if (
                         nome != null &&
                         data != null &&
@@ -876,7 +903,8 @@ class EventsActivity : ComponentActivity() {
                             horario = horario,
                             local = local,
                             descricao = descricao,
-                            categoria = categoria
+                            categoria = categoria,
+                            endereco = endereco
                         )
 
                     } else {
@@ -946,7 +974,8 @@ class EventsActivity : ComponentActivity() {
         data: String,
         horario: String,
         local: String,
-        descricao: String
+        descricao: String,
+        endereco: String
     ) {
 
         val intent = Intent(
@@ -960,6 +989,9 @@ class EventsActivity : ComponentActivity() {
         intent.putExtra("horarioEvento", horario)
         intent.putExtra("localEvento", local)
         intent.putExtra("descricaoEvento", descricao)
+
+        // Envia o endereço específico para a tela de detalhes.
+        intent.putExtra("enderecoEvento", endereco)
 
         startActivity(intent)
     }

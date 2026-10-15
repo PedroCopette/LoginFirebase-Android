@@ -1,5 +1,7 @@
 package br.com.loginfirebase
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -73,6 +75,8 @@ class EventDetailsActivity : ComponentActivity() {
             ?: "Local não informado"
         val descricaoEvento = intent.getStringExtra("descricaoEvento")
             ?: "Descrição não informada"
+        val enderecoEvento = intent.getStringExtra("enderecoEvento")
+            ?: "Av. Batista Bonotto Sobrinho, 733 - Santiago/RS"
 
         verificarInscricao(idEvento)
         verificarFavorito(idEvento)
@@ -114,19 +118,13 @@ class EventDetailsActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(paddingValues)
                             .padding(horizontal = 24.dp)
-                            .verticalScroll(
-                                rememberScrollState()
-                            ),
+                            .verticalScroll(rememberScrollState()),
                         horizontalAlignment = Alignment.Start
                     ) {
 
                         Spacer(
                             modifier = Modifier.height(20.dp)
                         )
-
-                        // =========================
-                        // NOME DO EVENTO
-                        // =========================
 
                         Text(
                             text = nomeEvento,
@@ -137,10 +135,6 @@ class EventDetailsActivity : ComponentActivity() {
                         Spacer(
                             modifier = Modifier.height(20.dp)
                         )
-
-                        // =========================
-                        // DATA
-                        // =========================
 
                         Text(
                             text = "Data",
@@ -157,10 +151,6 @@ class EventDetailsActivity : ComponentActivity() {
                             modifier = Modifier.height(14.dp)
                         )
 
-                        // =========================
-                        // HORÁRIO
-                        // =========================
-
                         Text(
                             text = "Horário",
                             fontSize = 14.sp,
@@ -176,10 +166,6 @@ class EventDetailsActivity : ComponentActivity() {
                             modifier = Modifier.height(14.dp)
                         )
 
-                        // =========================
-                        // LOCAL
-                        // =========================
-
                         Text(
                             text = "Local",
                             fontSize = 14.sp,
@@ -192,6 +178,35 @@ class EventDetailsActivity : ComponentActivity() {
                         )
 
                         Spacer(
+                            modifier = Modifier.height(14.dp)
+                        )
+
+                        Text(
+                            text = "Endereço",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            text = enderecoEvento,
+                            fontSize = 16.sp
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(14.dp)
+                        )
+
+                        Button(
+                            onClick = {
+                                abrirMapa(localEvento, enderecoEvento)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("VER LOCALIZAÇÃO NO MAPA")
+                        }
+
+                        Spacer(
                             modifier = Modifier.height(20.dp)
                         )
 
@@ -200,10 +215,6 @@ class EventDetailsActivity : ComponentActivity() {
                         Spacer(
                             modifier = Modifier.height(20.dp)
                         )
-
-                        // =========================
-                        // DESCRIÇÃO
-                        // =========================
 
                         Text(
                             text = descricaoEvento,
@@ -215,19 +226,13 @@ class EventDetailsActivity : ComponentActivity() {
                             modifier = Modifier.height(25.dp)
                         )
 
-                        // =========================
                         // INSCRIÇÃO
-                        // =========================
 
                         Button(
                             onClick = {
-
                                 if (inscrito) {
-
                                     cancelarInscricao(idEvento)
-
                                 } else {
-
                                     fazerInscricao(
                                         idEvento,
                                         nomeEvento,
@@ -240,12 +245,12 @@ class EventDetailsActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-
                             Text(
-                                text = if (inscrito)
+                                text = if (inscrito) {
                                     "CANCELAR INSCRIÇÃO"
-                                else
+                                } else {
                                     "INSCREVER-SE"
+                                }
                             )
                         }
 
@@ -253,19 +258,13 @@ class EventDetailsActivity : ComponentActivity() {
                             modifier = Modifier.height(10.dp)
                         )
 
-                        // =========================
                         // FAVORITOS
-                        // =========================
 
                         OutlinedButton(
                             onClick = {
-
                                 if (favorito) {
-
                                     removerFavorito(idEvento)
-
                                 } else {
-
                                     adicionarFavorito(
                                         idEvento,
                                         nomeEvento,
@@ -278,12 +277,12 @@ class EventDetailsActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-
                             Text(
-                                text = if (favorito)
+                                text = if (favorito) {
                                     "★  REMOVER DOS FAVORITOS"
-                                else
+                                } else {
                                     "☆  ADICIONAR AOS FAVORITOS"
+                                }
                             )
                         }
 
@@ -297,9 +296,7 @@ class EventDetailsActivity : ComponentActivity() {
                             modifier = Modifier.height(25.dp)
                         )
 
-                        // =========================
-                        // AVALIAÇÃO
-                        // =========================
+                        // AVALIAÇÕES
 
                         Text(
                             text = "Avaliação do evento",
@@ -312,18 +309,14 @@ class EventDetailsActivity : ComponentActivity() {
                         )
 
                         if (mediaAvaliacoes > 0) {
-
                             Text(
-                                text = "Média %.1f ⭐  •  %d avaliações"
-                                    .format(
-                                        mediaAvaliacoes,
-                                        quantidadeAvaliacoes
-                                    ),
+                                text = "Média %.1f ⭐  •  %d avaliações".format(
+                                    mediaAvaliacoes,
+                                    quantidadeAvaliacoes
+                                ),
                                 fontSize = 16.sp
                             )
-
                         } else {
-
                             Text(
                                 text = "Ainda não existem avaliações.",
                                 fontSize = 16.sp
@@ -333,10 +326,6 @@ class EventDetailsActivity : ComponentActivity() {
                         Spacer(
                             modifier = Modifier.height(20.dp)
                         )
-
-                        // =========================
-                        // USUÁRIO PODE AVALIAR
-                        // =========================
 
                         if (eventoEncerrado && inscrito) {
 
@@ -351,10 +340,11 @@ class EventDetailsActivity : ComponentActivity() {
                             )
 
                             Text(
-                                text = if (notaSelecionada == 0)
+                                text = if (notaSelecionada == 0) {
                                     "Escolha uma nota"
-                                else
-                                    "Nota selecionada: $notaSelecionada ⭐",
+                                } else {
+                                    "Nota selecionada: $notaSelecionada ⭐"
+                                },
                                 fontSize = 15.sp
                             )
 
@@ -362,28 +352,19 @@ class EventDetailsActivity : ComponentActivity() {
                                 modifier = Modifier.height(10.dp)
                             )
 
-                            // =========================
-                            // ESTRELAS
-                            // =========================
-
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-
                                 for (i in 1..5) {
-
                                     TextButton(
                                         onClick = {
                                             notaSelecionada = i
                                         }
                                     ) {
-
                                         Text(
-                                            text = if (
-                                                i <= notaSelecionada
-                                            ) {
+                                            text = if (i <= notaSelecionada) {
                                                 "★"
                                             } else {
                                                 "☆"
@@ -405,12 +386,12 @@ class EventDetailsActivity : ComponentActivity() {
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-
                                 Text(
-                                    text = if (notaUsuario == 0)
+                                    text = if (notaUsuario == 0) {
                                         "AVALIAR EVENTO"
-                                    else
+                                    } else {
                                         "ALTERAR AVALIAÇÃO"
+                                    }
                                 )
                             }
 
@@ -439,9 +420,7 @@ class EventDetailsActivity : ComponentActivity() {
                             modifier = Modifier.height(25.dp)
                         )
 
-                        // =========================
                         // COMENTÁRIOS
-                        // =========================
 
                         Text(
                             text = "Comentários",
@@ -460,11 +439,8 @@ class EventDetailsActivity : ComponentActivity() {
                             },
                             modifier = Modifier.fillMaxWidth(),
                             label = {
-
                                 Text(
-                                    text = if (
-                                        comentarioEditandoId == null
-                                    ) {
+                                    text = if (comentarioEditandoId == null) {
                                         "Digite seu comentário"
                                     } else {
                                         "Editando comentário"
@@ -479,29 +455,20 @@ class EventDetailsActivity : ComponentActivity() {
 
                         Button(
                             onClick = {
-
-                                if (
-                                    comentarioEditandoId == null
-                                ) {
-
+                                if (comentarioEditandoId == null) {
                                     publicarComentario(
                                         idEvento,
                                         nomeEvento
                                     )
-
                                 } else {
-
                                     editarComentario()
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-
                             Text(
-                                text = if (
-                                    comentarioEditandoId == null
-                                ) {
+                                text = if (comentarioEditandoId == null) {
                                     "PUBLICAR COMENTÁRIO"
                                 } else {
                                     "SALVAR EDIÇÃO"
@@ -509,10 +476,7 @@ class EventDetailsActivity : ComponentActivity() {
                             )
                         }
 
-                        if (
-                            comentarioEditandoId != null
-                        ) {
-
+                        if (comentarioEditandoId != null) {
                             Spacer(
                                 modifier = Modifier.height(5.dp)
                             )
@@ -524,10 +488,7 @@ class EventDetailsActivity : ComponentActivity() {
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-
-                                Text(
-                                    text = "CANCELAR EDIÇÃO"
-                                )
+                                Text("CANCELAR EDIÇÃO")
                             }
                         }
 
@@ -569,10 +530,7 @@ class EventDetailsActivity : ComponentActivity() {
                                     fontSize = 16.sp
                                 )
 
-                                if (
-                                    comentario.usuarioId ==
-                                    auth.currentUser?.uid
-                                ) {
+                                if (comentario.usuarioId == auth.currentUser?.uid) {
 
                                     Spacer(
                                         modifier = Modifier.height(8.dp)
@@ -584,18 +542,11 @@ class EventDetailsActivity : ComponentActivity() {
 
                                         TextButton(
                                             onClick = {
-
-                                                textoComentario =
-                                                    comentario.texto
-
-                                                comentarioEditandoId =
-                                                    comentario.id
+                                                textoComentario = comentario.texto
+                                                comentarioEditandoId = comentario.id
                                             }
                                         ) {
-
-                                            Text(
-                                                text = "EDITAR"
-                                            )
+                                            Text("EDITAR")
                                         }
 
                                         Spacer(
@@ -604,16 +555,10 @@ class EventDetailsActivity : ComponentActivity() {
 
                                         TextButton(
                                             onClick = {
-
-                                                excluirComentario(
-                                                    comentario.id
-                                                )
+                                                excluirComentario(comentario.id)
                                             }
                                         ) {
-
-                                            Text(
-                                                text = "EXCLUIR"
-                                            )
+                                            Text("EXCLUIR")
                                         }
                                     }
                                 }
@@ -639,27 +584,18 @@ class EventDetailsActivity : ComponentActivity() {
         }
     }
 
-    // =====================================================
     // INSCRIÇÃO
-    // =====================================================
 
-    private fun verificarInscricao(
-        idEvento: String
-    ) {
+    private fun verificarInscricao(idEvento: String) {
 
-        val usuario =
-            auth.currentUser ?: return
-
-        val idInscricao =
-            "${usuario.uid}_$idEvento"
+        val usuario = auth.currentUser ?: return
+        val idInscricao = "${usuario.uid}_$idEvento"
 
         db.collection("inscricoes")
             .document(idInscricao)
             .get()
             .addOnSuccessListener { documento ->
-
-                inscrito =
-                    documento.exists()
+                inscrito = documento.exists()
             }
     }
 
@@ -671,39 +607,33 @@ class EventDetailsActivity : ComponentActivity() {
         localEvento: String
     ) {
 
-        val usuario =
-            auth.currentUser
+        val usuario = auth.currentUser
 
         if (usuario == null) {
-
             Toast.makeText(
                 this,
                 "Faça login para se inscrever.",
                 Toast.LENGTH_SHORT
             ).show()
-
             return
         }
 
-        val idInscricao =
-            "${usuario.uid}_$idEvento"
+        val idInscricao = "${usuario.uid}_$idEvento"
 
-        val dados =
-            hashMapOf(
-                "idEvento" to idEvento,
-                "nomeEvento" to nomeEvento,
-                "dataEvento" to dataEvento,
-                "horarioEvento" to horarioEvento,
-                "localEvento" to localEvento,
-                "usuarioId" to usuario.uid,
-                "usuarioEmail" to usuario.email
-            )
+        val dados = hashMapOf(
+            "idEvento" to idEvento,
+            "nomeEvento" to nomeEvento,
+            "dataEvento" to dataEvento,
+            "horarioEvento" to horarioEvento,
+            "localEvento" to localEvento,
+            "usuarioId" to usuario.uid,
+            "usuarioEmail" to usuario.email
+        )
 
         db.collection("inscricoes")
             .document(idInscricao)
             .set(dados)
             .addOnSuccessListener {
-
                 inscrito = true
 
                 Toast.makeText(
@@ -713,7 +643,6 @@ class EventDetailsActivity : ComponentActivity() {
                 ).show()
             }
             .addOnFailureListener {
-
                 Toast.makeText(
                     this,
                     "Erro ao realizar inscrição.",
@@ -722,21 +651,15 @@ class EventDetailsActivity : ComponentActivity() {
             }
     }
 
-    private fun cancelarInscricao(
-        idEvento: String
-    ) {
+    private fun cancelarInscricao(idEvento: String) {
 
-        val usuario =
-            auth.currentUser ?: return
-
-        val idInscricao =
-            "${usuario.uid}_$idEvento"
+        val usuario = auth.currentUser ?: return
+        val idInscricao = "${usuario.uid}_$idEvento"
 
         db.collection("inscricoes")
             .document(idInscricao)
             .delete()
             .addOnSuccessListener {
-
                 inscrito = false
 
                 Toast.makeText(
@@ -746,7 +669,6 @@ class EventDetailsActivity : ComponentActivity() {
                 ).show()
             }
             .addOnFailureListener {
-
                 Toast.makeText(
                     this,
                     "Erro ao cancelar inscrição.",
@@ -755,27 +677,18 @@ class EventDetailsActivity : ComponentActivity() {
             }
     }
 
-    // =====================================================
     // FAVORITOS
-    // =====================================================
 
-    private fun verificarFavorito(
-        idEvento: String
-    ) {
+    private fun verificarFavorito(idEvento: String) {
 
-        val usuario =
-            auth.currentUser ?: return
-
-        val idFavorito =
-            "${usuario.uid}_$idEvento"
+        val usuario = auth.currentUser ?: return
+        val idFavorito = "${usuario.uid}_$idEvento"
 
         db.collection("favoritos")
             .document(idFavorito)
             .get()
             .addOnSuccessListener { documento ->
-
-                favorito =
-                    documento.exists()
+                favorito = documento.exists()
             }
     }
 
@@ -787,39 +700,33 @@ class EventDetailsActivity : ComponentActivity() {
         localEvento: String
     ) {
 
-        val usuario =
-            auth.currentUser
+        val usuario = auth.currentUser
 
         if (usuario == null) {
-
             Toast.makeText(
                 this,
                 "Faça login para favoritar eventos.",
                 Toast.LENGTH_SHORT
             ).show()
-
             return
         }
 
-        val idFavorito =
-            "${usuario.uid}_$idEvento"
+        val idFavorito = "${usuario.uid}_$idEvento"
 
-        val dados =
-            hashMapOf(
-                "idEvento" to idEvento,
-                "nomeEvento" to nomeEvento,
-                "dataEvento" to dataEvento,
-                "horarioEvento" to horarioEvento,
-                "localEvento" to localEvento,
-                "usuarioId" to usuario.uid,
-                "usuarioEmail" to usuario.email
-            )
+        val dados = hashMapOf(
+            "idEvento" to idEvento,
+            "nomeEvento" to nomeEvento,
+            "dataEvento" to dataEvento,
+            "horarioEvento" to horarioEvento,
+            "localEvento" to localEvento,
+            "usuarioId" to usuario.uid,
+            "usuarioEmail" to usuario.email
+        )
 
         db.collection("favoritos")
             .document(idFavorito)
             .set(dados)
             .addOnSuccessListener {
-
                 favorito = true
 
                 Toast.makeText(
@@ -829,7 +736,6 @@ class EventDetailsActivity : ComponentActivity() {
                 ).show()
             }
             .addOnFailureListener {
-
                 Toast.makeText(
                     this,
                     "Erro ao adicionar aos favoritos.",
@@ -838,21 +744,15 @@ class EventDetailsActivity : ComponentActivity() {
             }
     }
 
-    private fun removerFavorito(
-        idEvento: String
-    ) {
+    private fun removerFavorito(idEvento: String) {
 
-        val usuario =
-            auth.currentUser ?: return
-
-        val idFavorito =
-            "${usuario.uid}_$idEvento"
+        val usuario = auth.currentUser ?: return
+        val idFavorito = "${usuario.uid}_$idEvento"
 
         db.collection("favoritos")
             .document(idFavorito)
             .delete()
             .addOnSuccessListener {
-
                 favorito = false
 
                 Toast.makeText(
@@ -862,7 +762,6 @@ class EventDetailsActivity : ComponentActivity() {
                 ).show()
             }
             .addOnFailureListener {
-
                 Toast.makeText(
                     this,
                     "Erro ao remover dos favoritos.",
@@ -871,74 +770,61 @@ class EventDetailsActivity : ComponentActivity() {
             }
     }
 
-    // =====================================================
     // COMENTÁRIOS
-    // =====================================================
 
     private fun publicarComentario(
         idEvento: String,
         nomeEvento: String
     ) {
 
-        val usuario =
-            auth.currentUser
+        val usuario = auth.currentUser
 
         if (usuario == null) {
-
             Toast.makeText(
                 this,
                 "Faça login para comentar.",
                 Toast.LENGTH_SHORT
             ).show()
-
             return
         }
 
-        val texto =
-            textoComentario.trim()
+        val texto = textoComentario.trim()
 
         if (texto.isEmpty()) {
-
             Toast.makeText(
                 this,
                 "Digite um comentário.",
                 Toast.LENGTH_SHORT
             ).show()
-
             return
         }
 
-        val comentarioId =
-            db.collection("comentarios")
-                .document()
-                .id
+        val comentarioId = db.collection("comentarios")
+            .document()
+            .id
 
-        val autorNome =
-            usuario.displayName
-                ?: usuario.email
-                ?: "Usuário"
+        val autorNome = usuario.displayName
+            ?: usuario.email
+            ?: "Usuário"
 
-        val dataAtual =
-            SimpleDateFormat(
-                "dd/MM/yyyy HH:mm",
-                Locale.getDefault()
-            ).format(Date())
+        val dataAtual = SimpleDateFormat(
+            "dd/MM/yyyy HH:mm",
+            Locale.getDefault()
+        ).format(Date())
 
-        val dados =
-            hashMapOf(
-                "idEvento" to idEvento,
-                "nomeEvento" to nomeEvento,
-                "texto" to texto,
-                "usuarioId" to usuario.uid,
-                "autorNome" to autorNome,
-                "dataPublicacao" to dataAtual
-            )
+        val dados = hashMapOf(
+            "idEvento" to idEvento,
+            "nomeEvento" to nomeEvento,
+            "texto" to texto,
+            "usuarioId" to usuario.uid,
+            "autorNome" to autorNome,
+            "dataPublicacao" to dataAtual
+        )
 
         db.collection("comentarios")
             .document(comentarioId)
             .set(dados)
             .addOnSuccessListener {
-
                 textoComentario = ""
 
                 Toast.makeText(
@@ -950,7 +836,6 @@ class EventDetailsActivity : ComponentActivity() {
                 carregarComentarios(idEvento)
             }
             .addOnFailureListener {
-
                 Toast.makeText(
                     this,
                     "Erro ao publicar comentário.",
@@ -959,64 +844,38 @@ class EventDetailsActivity : ComponentActivity() {
             }
     }
 
-    private fun carregarComentarios(
-        idEvento: String
-    ) {
+    private fun carregarComentarios(idEvento: String) {
 
         db.collection("comentarios")
-            .whereEqualTo(
-                "idEvento",
-                idEvento
-            )
+            .whereEqualTo("idEvento", idEvento)
             .get()
             .addOnSuccessListener { resultado ->
 
-                val lista =
-                    resultado.documents.mapNotNull { documento ->
+                val lista = resultado.documents.mapNotNull { documento ->
 
-                        val id =
-                            documento.id
+                    val id = documento.id
+                    val texto = documento.getString("texto")
+                    val usuarioId = documento.getString("usuarioId")
+                    val autorNome = documento.getString("autorNome")
+                    val dataPublicacao = documento.getString("dataPublicacao")
 
-                        val texto =
-                            documento.getString(
-                                "texto"
-                            )
-
-                        val usuarioId =
-                            documento.getString(
-                                "usuarioId"
-                            )
-
-                        val autorNome =
-                            documento.getString(
-                                "autorNome"
-                            )
-
-                        val dataPublicacao =
-                            documento.getString(
-                                "dataPublicacao"
-                            )
-
-                        if (
-                            texto != null &&
-                            usuarioId != null &&
-                            autorNome != null &&
-                            dataPublicacao != null
-                        ) {
-
-                            Comentario(
-                                id = id,
-                                texto = texto,
-                                usuarioId = usuarioId,
-                                autorNome = autorNome,
-                                dataPublicacao = dataPublicacao
-                            )
-
-                        } else {
-
-                            null
-                        }
+                    if (
+                        texto != null &&
+                        usuarioId != null &&
+                        autorNome != null &&
+                        dataPublicacao != null
+                    ) {
+                        Comentario(
+                            id = id,
+                            texto = texto,
+                            usuarioId = usuarioId,
+                            autorNome = autorNome,
+                            dataPublicacao = dataPublicacao
+                        )
+                    } else {
+                        null
                     }
+                }
 
                 comentarios = lista
             }
@@ -1024,31 +883,22 @@ class EventDetailsActivity : ComponentActivity() {
 
     private fun editarComentario() {
 
-        val idComentario =
-            comentarioEditandoId ?: return
-
-        val texto =
-            textoComentario.trim()
+        val idComentario = comentarioEditandoId ?: return
+        val texto = textoComentario.trim()
 
         if (texto.isEmpty()) {
-
             Toast.makeText(
                 this,
                 "Digite um comentário.",
                 Toast.LENGTH_SHORT
             ).show()
-
             return
         }
 
         db.collection("comentarios")
             .document(idComentario)
-            .update(
-                "texto",
-                texto
-            )
+            .update("texto", texto)
             .addOnSuccessListener {
-
                 textoComentario = ""
                 comentarioEditandoId = null
 
@@ -1058,17 +908,10 @@ class EventDetailsActivity : ComponentActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
 
-                val idEvento =
-                    intent.getStringExtra(
-                        "idEvento"
-                    ) ?: ""
-
-                carregarComentarios(
-                    idEvento
-                )
+                val idEvento = intent.getStringExtra("idEvento") ?: ""
+                carregarComentarios(idEvento)
             }
             .addOnFailureListener {
-
                 Toast.makeText(
                     this,
                     "Erro ao editar comentário.",
@@ -1077,32 +920,22 @@ class EventDetailsActivity : ComponentActivity() {
             }
     }
 
-    private fun excluirComentario(
-        idComentario: String
-    ) {
+    private fun excluirComentario(idComentario: String) {
 
         db.collection("comentarios")
             .document(idComentario)
             .delete()
             .addOnSuccessListener {
-
                 Toast.makeText(
                     this,
                     "Comentário excluído!",
                     Toast.LENGTH_SHORT
                 ).show()
 
-                val idEvento =
-                    intent.getStringExtra(
-                        "idEvento"
-                    ) ?: ""
-
-                carregarComentarios(
-                    idEvento
-                )
+                val idEvento = intent.getStringExtra("idEvento") ?: ""
+                carregarComentarios(idEvento)
             }
             .addOnFailureListener {
-
                 Toast.makeText(
                     this,
                     "Erro ao excluir comentário.",
@@ -1111,9 +944,7 @@ class EventDetailsActivity : ComponentActivity() {
             }
     }
 
-    // =====================================================
     // AVALIAÇÕES
-    // =====================================================
 
     private fun verificarEventoEncerrado(
         dataEvento: String,
@@ -1121,42 +952,27 @@ class EventDetailsActivity : ComponentActivity() {
     ) {
 
         try {
+            val formato = SimpleDateFormat(
+                "dd/MM/yyyy HH:mm",
+                Locale.getDefault()
+            )
 
-            val formato =
-                SimpleDateFormat(
-                    "dd/MM/yyyy HH:mm",
-                    Locale.getDefault()
-                )
-
-            val dataEventoCompleta =
-                "$dataEvento $horarioEvento"
-
-            val data =
-                formato.parse(
-                    dataEventoCompleta
-                )
+            val dataEventoCompleta = "$dataEvento $horarioEvento"
+            val data = formato.parse(dataEventoCompleta)
 
             if (data != null) {
-
-                eventoEncerrado =
-                    Date().after(data)
+                eventoEncerrado = Date().after(data)
             }
 
         } catch (e: Exception) {
-
             eventoEncerrado = false
         }
     }
 
-    private fun carregarAvaliacaoUsuario(
-        idEvento: String
-    ) {
+    private fun carregarAvaliacaoUsuario(idEvento: String) {
 
-        val usuario =
-            auth.currentUser ?: return
-
-        val idAvaliacao =
-            "${usuario.uid}_$idEvento"
+        val usuario = auth.currentUser ?: return
+        val idAvaliacao = "${usuario.uid}_$idEvento"
 
         db.collection("avaliacoes")
             .document(idAvaliacao)
@@ -1164,88 +980,67 @@ class EventDetailsActivity : ComponentActivity() {
             .addOnSuccessListener { documento ->
 
                 if (documento.exists()) {
-
-                    val nota =
-                        documento
-                            .getLong("nota")
-                            ?.toInt()
-                            ?: 0
-
+                    val nota = documento.getLong("nota")?.toInt() ?: 0
                     notaUsuario = nota
                     notaSelecionada = nota
                 }
             }
     }
 
-    private fun salvarAvaliacao(
-        idEvento: String
-    ) {
+    private fun salvarAvaliacao(idEvento: String) {
 
-        val usuario =
-            auth.currentUser
+        val usuario = auth.currentUser
 
         if (usuario == null) {
-
             Toast.makeText(
                 this,
                 "Faça login para avaliar.",
                 Toast.LENGTH_SHORT
             ).show()
-
             return
         }
 
         if (!inscrito) {
-
             Toast.makeText(
                 this,
                 "Você precisa estar inscrito no evento.",
                 Toast.LENGTH_SHORT
             ).show()
-
             return
         }
 
         if (!eventoEncerrado) {
-
             Toast.makeText(
                 this,
                 "O evento ainda não foi encerrado.",
                 Toast.LENGTH_SHORT
             ).show()
-
             return
         }
 
         if (notaSelecionada !in 1..5) {
-
             Toast.makeText(
                 this,
                 "Selecione uma nota de 1 a 5.",
                 Toast.LENGTH_SHORT
             ).show()
-
             return
         }
 
-        val idAvaliacao =
-            "${usuario.uid}_$idEvento"
+        val idAvaliacao = "${usuario.uid}_$idEvento"
 
-        val dados =
-            hashMapOf(
-                "idEvento" to idEvento,
-                "usuarioId" to usuario.uid,
-                "usuarioEmail" to usuario.email,
-                "nota" to notaSelecionada
-            )
+        val dados = hashMapOf(
+            "idEvento" to idEvento,
+            "usuarioId" to usuario.uid,
+            "usuarioEmail" to usuario.email,
+            "nota" to notaSelecionada
+        )
 
         db.collection("avaliacoes")
             .document(idAvaliacao)
             .set(dados)
             .addOnSuccessListener {
-
-                notaUsuario =
-                    notaSelecionada
+                notaUsuario = notaSelecionada
 
                 Toast.makeText(
                     this,
@@ -1253,12 +1048,9 @@ class EventDetailsActivity : ComponentActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
 
-                carregarMediaAvaliacoes(
-                    idEvento
-                )
+                carregarMediaAvaliacoes(idEvento)
             }
             .addOnFailureListener {
-
                 Toast.makeText(
                     this,
                     "Erro ao salvar avaliação.",
@@ -1267,43 +1059,70 @@ class EventDetailsActivity : ComponentActivity() {
             }
     }
 
-    private fun carregarMediaAvaliacoes(
-        idEvento: String
-    ) {
+    private fun carregarMediaAvaliacoes(idEvento: String) {
 
         db.collection("avaliacoes")
-            .whereEqualTo(
-                "idEvento",
-                idEvento
-            )
+            .whereEqualTo("idEvento", idEvento)
             .get()
             .addOnSuccessListener { resultado ->
 
                 if (resultado.isEmpty) {
-
                     mediaAvaliacoes = 0.0
                     quantidadeAvaliacoes = 0
-
                     return@addOnSuccessListener
                 }
 
-                val notas =
-                    resultado.documents.mapNotNull {
-
-                        it.getLong(
-                            "nota"
-                        )?.toInt()
-                    }
+                val notas = resultado.documents.mapNotNull {
+                    it.getLong("nota")?.toInt()
+                }
 
                 if (notas.isNotEmpty()) {
-
-                    mediaAvaliacoes =
-                        notas.average()
-
-                    quantidadeAvaliacoes =
-                        notas.size
+                    mediaAvaliacoes = notas.average()
+                    quantidadeAvaliacoes = notas.size
                 }
             }
+    }
+
+    // LOCALIZAÇÃO NO GOOGLE MAPS
+
+    private fun abrirMapa(
+        local: String,
+        endereco: String
+    ) {
+
+        val origem = Uri.encode(
+            "Santiago, Rio Grande do Sul, Brasil"
+        )
+
+        val destino = if (endereco.isNotBlank()) {
+            "$local, $endereco"
+        } else {
+            "$local, Santiago, Rio Grande do Sul, Brasil"
+        }
+
+        val destinoCodificado = Uri.encode(destino)
+
+        val uriRota = Uri.parse(
+            "https://www.google.com/maps/dir/?api=1" +
+                    "&origin=$origem" +
+                    "&destination=$destinoCodificado" +
+                    "&travelmode=driving"
+        )
+
+        try {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    uriRota
+                )
+            )
+        } catch (e: Exception) {
+            Toast.makeText(
+                this,
+                "Não foi possível abrir o Google Maps.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 }
 
