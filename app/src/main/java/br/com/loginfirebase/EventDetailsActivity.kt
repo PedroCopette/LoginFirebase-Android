@@ -126,6 +126,8 @@ class EventDetailsActivity : ComponentActivity() {
                             modifier = Modifier.height(20.dp)
                         )
 
+                        // NOME DO EVENTO
+
                         Text(
                             text = nomeEvento,
                             fontSize = 26.sp,
@@ -135,6 +137,8 @@ class EventDetailsActivity : ComponentActivity() {
                         Spacer(
                             modifier = Modifier.height(20.dp)
                         )
+
+                        // DATA
 
                         Text(
                             text = "Data",
@@ -151,6 +155,8 @@ class EventDetailsActivity : ComponentActivity() {
                             modifier = Modifier.height(14.dp)
                         )
 
+                        // HORÁRIO
+
                         Text(
                             text = "Horário",
                             fontSize = 14.sp,
@@ -165,6 +171,8 @@ class EventDetailsActivity : ComponentActivity() {
                         Spacer(
                             modifier = Modifier.height(14.dp)
                         )
+
+                        // LOCAL
 
                         Text(
                             text = "Local",
@@ -181,6 +189,8 @@ class EventDetailsActivity : ComponentActivity() {
                             modifier = Modifier.height(14.dp)
                         )
 
+                        // ENDEREÇO DO EVENTO
+
                         Text(
                             text = "Endereço",
                             fontSize = 14.sp,
@@ -196,6 +206,8 @@ class EventDetailsActivity : ComponentActivity() {
                             modifier = Modifier.height(14.dp)
                         )
 
+                        // LOCALIZAÇÃO NO MAPA
+
                         Button(
                             onClick = {
                                 abrirMapa(localEvento, enderecoEvento)
@@ -207,6 +219,78 @@ class EventDetailsActivity : ComponentActivity() {
                         }
 
                         Spacer(
+                            modifier = Modifier.height(10.dp)
+                        )
+
+                        // FOTOS DO EVENTO
+
+                        Button(
+                            onClick = {
+                                val intentFotos = Intent(
+                                    this@EventDetailsActivity,
+                                    EventPhotosActivity::class.java
+                                )
+
+                                intentFotos.putExtra("idEvento", idEvento)
+                                intentFotos.putExtra("nomeEvento", nomeEvento)
+
+                                startActivity(intentFotos)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("FOTOS DO EVENTO")
+                        }
+
+                        Spacer(
+                            modifier = Modifier.height(10.dp)
+                        )
+
+                        // ÁUDIOS DO EVENTO
+
+                        Button(
+                            onClick = {
+                                val intentAudios = Intent(
+                                    this@EventDetailsActivity,
+                                    EventAudioActivity::class.java
+                                )
+
+                                intentAudios.putExtra("idEvento", idEvento)
+                                intentAudios.putExtra("nomeEvento", nomeEvento)
+
+                                startActivity(intentAudios)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("ÁUDIOS DO EVENTO")
+                        }
+
+                        Spacer(
+                            modifier = Modifier.height(10.dp)
+                        )
+
+                        // VÍDEOS DO EVENTO
+
+                        Button(
+                            onClick = {
+                                val intentVideos = Intent(
+                                    this@EventDetailsActivity,
+                                    EventVideoActivity::class.java
+                                )
+
+                                intentVideos.putExtra("idEvento", idEvento)
+                                intentVideos.putExtra("nomeEvento", nomeEvento)
+
+                                startActivity(intentVideos)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("VÍDEOS DO EVENTO")
+                        }
+
+                        Spacer(
                             modifier = Modifier.height(20.dp)
                         )
 
@@ -215,6 +299,8 @@ class EventDetailsActivity : ComponentActivity() {
                         Spacer(
                             modifier = Modifier.height(20.dp)
                         )
+
+                        // DESCRIÇÃO
 
                         Text(
                             text = descricaoEvento,
@@ -327,6 +413,8 @@ class EventDetailsActivity : ComponentActivity() {
                             modifier = Modifier.height(20.dp)
                         )
 
+                        // USUÁRIO PODE AVALIAR
+
                         if (eventoEncerrado && inscrito) {
 
                             Text(
@@ -351,6 +439,8 @@ class EventDetailsActivity : ComponentActivity() {
                             Spacer(
                                 modifier = Modifier.height(10.dp)
                             )
+
+                            // ESTRELAS
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
